@@ -10,7 +10,11 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/user")
 public class UserController {
-    private List<User> users = new ArrayList<>();
+    private final static List<User> users = new ArrayList<>();
+
+    public static List<User> getUsers() {
+        return users;
+    }
 
     @GetMapping("/new")
     public User newUserID() {
