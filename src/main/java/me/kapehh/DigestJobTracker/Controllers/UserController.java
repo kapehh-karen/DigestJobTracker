@@ -1,5 +1,6 @@
 package me.kapehh.DigestJobTracker.Controllers;
 
+import me.kapehh.DigestJobTracker.Exceptions.UUIDNotFoundException;
 import me.kapehh.DigestJobTracker.Model.User;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,11 +17,29 @@ public class UserController {
         return users;
     }
 
+    public static User getUserByUUID(UUID uuid) {
+        return users
+                .stream()
+                .filter(u -> u.getUuid().equals(uuid))
+                .findFirst()
+                .orElse(null);
+    }
+
     @GetMapping("/new")
-    public User newUserID() {
+    public User createUser() {
         User user = new User(UUID.randomUUID());
         users.add(user);
         return user;
+    }
+
+    @GetMapping("/info")
+    public User getUserTasks(@RequestParam UUID uuid) {
+        User user = getUserByUUID(uuid);
+        if (user != null) {
+            return user;
+        } else {
+            throw new UUIDNotFoundException();
+        }
     }
 
     @GetMapping("/list")

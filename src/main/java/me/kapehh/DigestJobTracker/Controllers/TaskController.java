@@ -1,12 +1,13 @@
 package me.kapehh.DigestJobTracker.Controllers;
 
-import me.kapehh.DigestJobTracker.Exceptions.ResourceNotFoundException;
+import me.kapehh.DigestJobTracker.Enums.URLType;
+import me.kapehh.DigestJobTracker.Exceptions.InvalidURLException;
+import me.kapehh.DigestJobTracker.Exceptions.UUIDNotFoundException;
 import me.kapehh.DigestJobTracker.Model.Task;
 import me.kapehh.DigestJobTracker.Model.User;
+import me.kapehh.DigestJobTracker.Utils.URLUtil;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -14,17 +15,20 @@ import java.util.UUID;
 public class TaskController {
 
     @PostMapping("/new")
-    public void newTask(@RequestParam UUID uuid, @RequestBody Task task) {
-        User user = UserController.getUsers()
-                    .stream()
-                    .filter(u -> u.getUuid().equals(uuid))
-                    .findFirst()
-                    .orElse(null);
-
+    public Task createTask(@RequestParam UUID uuid, @RequestBody Task task) {
+        User user = UserController.getUserByUUID(uuid);
         if (user != null) {
-            user.addTask(task);
+            if (URLUtil.validRemoteURL(task.getSrc())) {
+                task.setTypeUrl(URLType.REMOTE);
+            } else if (URLUtil.validLocalURL(task.getSrc())) {
+                task.setTypeUrl(URLType.LOCAL);
+            } else {
+                throw new InvalidURLException();
+            }
+            user.getUserTasks().add(task);
+            return task;
         } else {
-            throw new ResourceNotFoundException();
+            throw new UUIDNotFoundException();
         }
     }
 }

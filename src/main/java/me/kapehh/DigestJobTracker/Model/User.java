@@ -1,7 +1,7 @@
 package me.kapehh.DigestJobTracker.Model;
 
-import me.kapehh.DigestJobTracker.Tasks.TaskStatus;
-import me.kapehh.DigestJobTracker.Tasks.UserTask;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,9 +12,12 @@ import java.util.UUID;
  */
 public class User {
     private UUID uuid;
-    private List<UserTask> userTasks = new ArrayList<>();
+
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    private List<Task> userTasks;
 
     public User(UUID uuid) {
+        this.userTasks = new ArrayList<>();
         this.uuid = uuid;
     }
 
@@ -22,7 +25,7 @@ public class User {
         return uuid;
     }
 
-    public void addTask(Task task) {
-        userTasks.add(new UserTask(task, TaskStatus.IN_QUEUE));
+    public List<Task> getUserTasks() {
+        return userTasks;
     }
 }
