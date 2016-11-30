@@ -8,7 +8,7 @@ import java.io.StringWriter;
 /**
  * Created by karen on 28.11.2016.
  */
-public class UtlTest {
+public class UrlTest {
 
     @Test
     public void testUrlRemote() {

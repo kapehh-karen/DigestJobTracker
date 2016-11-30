@@ -9,6 +9,11 @@ import me.kapehh.DigestJobTracker.Enums.URLType;
  * Created by karen on 26.11.2016.
  */
 public class Task {
+    private static int uniqueIndex = 0;
+
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    private int id;
+
     private String src;
 
     private String algo;
@@ -26,6 +31,8 @@ public class Task {
     private String stackTrace;
 
     public Task() {
+        uniqueIndex++;
+        this.id = uniqueIndex;
         this.status = TaskStatus.IN_QUEUE;
     }
 
