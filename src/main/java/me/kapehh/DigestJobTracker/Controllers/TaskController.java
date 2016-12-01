@@ -1,8 +1,8 @@
 package me.kapehh.DigestJobTracker.Controllers;
 
+import com.sun.xml.internal.ws.api.pipe.FiberContextSwitchInterceptor;
 import me.kapehh.DigestJobTracker.Enums.URLType;
-import me.kapehh.DigestJobTracker.Exceptions.InvalidAlgoException;
-import me.kapehh.DigestJobTracker.Exceptions.InvalidURLException;
+import me.kapehh.DigestJobTracker.Exceptions.MessageException;
 import me.kapehh.DigestJobTracker.Exceptions.UUIDNotFoundException;
 import me.kapehh.DigestJobTracker.Model.Task;
 import me.kapehh.DigestJobTracker.Model.User;
@@ -26,7 +26,7 @@ public class TaskController {
             } else if (URLUtil.validLocalURL(task.getSrc())) {
                 task.setTypeUrl(URLType.LOCAL);
             } else {
-                throw new InvalidURLException();
+                throw new MessageException("Invalid URL!");
             }
 
             switch (task.getAlgo().toLowerCase()) {
@@ -37,12 +37,28 @@ public class TaskController {
                     break;
                 default:
                     // invalid algorithm
-                    throw new InvalidAlgoException();
+                    throw new MessageException("Invalid algorithm!");
             }
 
             user.getUserTasks().add(task);
             Worker.addWorkerTask(task);
             return task;
+        } else {
+            throw new UUIDNotFoundException();
+        }
+    }
+
+    @GetMapping("/cancel")
+    public void cancelTask(@RequestParam UUID uuid, @RequestParam int taskId) {
+        User user = UserController.getUserByUUID(uuid);
+
+        if (user != null) {
+            Task task = user.getUserTasks().stream().filter(t -> t.getId() == taskId).findFirst().orElse(null);
+
+            if (task == null)
+                throw new MessageException("Task not found!");
+
+            Worker.cancelWorkerTask(task);
         } else {
             throw new UUIDNotFoundException();
         }

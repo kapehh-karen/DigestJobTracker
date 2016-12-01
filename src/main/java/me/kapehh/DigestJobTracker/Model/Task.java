@@ -5,6 +5,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import me.kapehh.DigestJobTracker.Enums.TaskStatus;
 import me.kapehh.DigestJobTracker.Enums.URLType;
 
+import java.util.concurrent.Future;
+
 /**
  * Created by karen on 26.11.2016.
  */
@@ -30,10 +32,17 @@ public class Task {
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private String stackTrace;
 
+    @JsonIgnore
+    private Future<?> workerTask;
+
     public Task() {
         uniqueIndex++;
         this.id = uniqueIndex;
         this.status = TaskStatus.IN_QUEUE;
+    }
+
+    public int getId() {
+        return id;
     }
 
     public String getSrc() {
@@ -82,5 +91,13 @@ public class Task {
 
     public void setStackTrace(String stackTrace) {
         this.stackTrace = stackTrace;
+    }
+
+    public Future<?> getWorkerTask() {
+        return workerTask;
+    }
+
+    public void setWorkerTask(Future<?> workerTask) {
+        this.workerTask = workerTask;
     }
 }

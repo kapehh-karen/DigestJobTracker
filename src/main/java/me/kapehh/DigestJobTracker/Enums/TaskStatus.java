@@ -6,6 +6,7 @@ package me.kapehh.DigestJobTracker.Enums;
 public enum TaskStatus {
     IN_QUEUE,
     WORKING,
+    CANCELED,
     ERROR,
     COMPLETED
 }

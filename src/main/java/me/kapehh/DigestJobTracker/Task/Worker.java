@@ -2,7 +2,18 @@ package me.kapehh.DigestJobTracker.Task;
 
 import me.kapehh.DigestJobTracker.Enums.TaskStatus;
 import me.kapehh.DigestJobTracker.Model.Task;
+import me.kapehh.DigestJobTracker.Utils.ExceptionUtil;
+import me.kapehh.DigestJobTracker.Utils.HashUtil;
 
+import java.io.ByteArrayOutputStream;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.nio.channels.Channels;
+import java.nio.channels.ReadableByteChannel;
+import java.security.MessageDigest;
+import java.util.Formatter;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -13,7 +24,14 @@ public class Worker implements Runnable {
     private static final ExecutorService service = Executors.newFixedThreadPool(1);
 
     public static void addWorkerTask(Task task) {
-        service.submit(new Worker(task));
+        task.setWorkerTask(service.submit(new Worker(task)));
+    }
+
+    public static void cancelWorkerTask(Task task) {
+        if (task.getWorkerTask() != null) {
+            task.getWorkerTask().cancel(true);
+            task.setStatus(TaskStatus.CANCELED);
+        }
     }
 
     // ------
@@ -26,17 +44,19 @@ public class Worker implements Runnable {
 
     @Override
     public void run() {
-        task.setStatus(TaskStatus.WORKING);
-
-        System.out.println("START WORKER: " + task.getSrc());
         try {
-            Thread.sleep(7000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+            task.setStatus(TaskStatus.WORKING);
+            switch (task.getTypeUrl()) {
+                case LOCAL:
+                    break;
+                case REMOTE:
+                    task.setHash(HashUtil.calculateRemoteHash(task.getSrc(), task.getAlgo()));
+                    break;
+            }
+            task.setStatus(TaskStatus.COMPLETED);
+        } catch (Throwable e) {
+            task.setStackTrace(ExceptionUtil.getStackTrace(e));
             task.setStatus(TaskStatus.ERROR);
         }
-        System.out.println("END WORKER: " + task.getSrc());
-
-        task.setStatus(TaskStatus.COMPLETED);
     }
 }
