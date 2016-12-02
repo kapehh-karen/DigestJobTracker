@@ -21,7 +21,7 @@ import java.util.concurrent.Executors;
  * Created by karen on 01.12.2016.
  */
 public class Worker implements Runnable {
-    private static final ExecutorService service = Executors.newFixedThreadPool(1);
+    private static final ExecutorService service = Executors.newFixedThreadPool(5);
 
     public static void addWorkerTask(Task task) {
         task.setWorkerTask(service.submit(new Worker(task)));
@@ -48,6 +48,7 @@ public class Worker implements Runnable {
             task.setStatus(TaskStatus.WORKING);
             switch (task.getTypeUrl()) {
                 case LOCAL:
+                    task.setHash(HashUtil.calculateLocalHash(task.getSrc(), task.getAlgo()));
                     break;
                 case REMOTE:
                     task.setHash(HashUtil.calculateRemoteHash(task.getSrc(), task.getAlgo()));
